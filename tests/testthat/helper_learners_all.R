@@ -34,8 +34,8 @@ testThatLearnerRespectsWeights = function(lrn, task, train.inds, test.inds, weig
   expect_true(!is.na(perf1), info = lrn$id)
   expect_true(!is.na(perf2), info = lrn$id)
   expect_true(!is.na(perf3), info = lrn$id)
-  expect_equal(get.pred.fun(p1), get.pred.fun(p2), info = lrn$id)
-  expect_true(any(get.pred.fun(p1) != get.pred.fun(p3)), info = lrn$id)
+  expect_equal(get.pred.fun(p1), get.pred.fun(p2), info = lrn$id, tolerance = 0.0001, scale = 1)
+  expect_false(isTRUE(all.equal(get.pred.fun(p1), get.pred.fun(p3))), info = lrn$id)
 }
 
 
@@ -60,6 +60,7 @@ testThatLearnerCanTrainPredict = function(lrn, task, hyperpars, pred.type = "res
     lrn = setHyperPars(lrn, par.vals = hyperpars[[lrn$id]])
 
   lrn = setPredictType(lrn, pred.type)
+
   expect_output(info = info, print(lrn), lrn$id)
 
   m = train(lrn, task)
@@ -161,6 +162,7 @@ testThatLearnerCanCalculateImportance = function(lrn, task, hyperpars) {
 
   if (lrn$id %in% names(hyperpars))
     lrn = setHyperPars(lrn, par.vals = hyperpars[[lrn$id]])
+
   # some learners need special param settings to compute variable importance
   # add them here if you implement a measure that requires that.
   # you may also want to change the params for the learner if training takes

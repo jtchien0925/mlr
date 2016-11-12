@@ -237,8 +237,8 @@ mylist = function(..., create = FALSE) {
 }
 
 testFacetting = function(obj, nrow = NULL, ncol = NULL) {
-  expect_equal(obj$facet$nrow, nrow)
-  expect_equal(obj$facet$ncol, ncol)
+  expect_equal(obj$facet$params$nrow, nrow)
+  expect_equal(obj$facet$params$ncol, ncol)
 }
 
 quickcheckTest = function(...) {
@@ -305,4 +305,10 @@ testSimpleParsetsUpdate = function(t.name, df, target,update.inds, train.inds,
     old.predicts = old.predicts.list[[i]]
     testSimpleUpdate(t.name,target, train.df, update.df, test.df, old.predicts, parset)
   }
+
+testDocForStrings = function(doc, x, grid.size = 1L) {
+  text.paths = paste("/svg:svg//svg:text[text()[contains(., '",
+    x, "')]]", sep = "")
+  nodes = XML::getNodeSet(doc, text.paths, ns.svg)
+  expect_equal(length(nodes), length(x) * grid.size)
 }

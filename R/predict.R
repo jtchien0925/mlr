@@ -38,7 +38,7 @@
 #' p = predict(model, task = iris.task, subset = test.set)
 #' print(p)
 #' getPredictionProbabilities(p)
-predict.WrappedModel = function(object, task, newdata, subset, ...) {
+predict.WrappedModel = function(object, task, newdata, subset = NULL, ...) {
   if (!xor(missing(task), missing(newdata)))
     stop("Pass either a task object or a newdata data.frame to predict, but not both!")
   assertClass(object, classes = "WrappedModel")
@@ -61,7 +61,7 @@ predict.WrappedModel = function(object, task, newdata, subset, ...) {
     }
     size = nrow(newdata)
   }
-  if (missing(subset)) {
+  if (is.null(subset)) {
     subset = seq_len(size)
   } else {
     if (is.logical(subset))
