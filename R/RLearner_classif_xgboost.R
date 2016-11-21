@@ -54,8 +54,7 @@ trainLearner.classif.xgboost = function(.learner, .task, .subset, .weights = NUL
   num_class = length(class_lvls)
   parlist = list(...)
   obj = parlist$objective
-
-
+  
   if (num_class == 2L) {
     if (is.null(obj))
       obj = "binary:logistic"
@@ -64,6 +63,8 @@ trainLearner.classif.xgboost = function(.learner, .task, .subset, .weights = NUL
       obj = "multi:softprob"
   }
 
+  if (.learner$predict.type == "prob" && obj == "multi:softmax")
+    stop("objective = 'multi:softmax' does not work with predict.type = 'prob'")
 
 
   if (obj %in% c("multi:softprob", "multi:softmax")) {
@@ -104,9 +105,8 @@ predictLearner.classif.xgboost = function(.learner, .model, .newdata, ...) {
 
 
   if (num_class == 2L) {
-    if(.learner$par.vals$objective %in% c("multi:softprob", "multi:softmax")) {
-      y = matrix(p,num_class,length(p)/num_class)
-      y = t(y)
+    if(.learner$par.vals$objective %in% c("multi:softprob")) {
+      y = matrix(p, nrow = length(p) / num_class, ncol = num_class, byrow = TRUE)
       colnames(y) = class_lvls
     } else {
       y = matrix(0, ncol = 2, nrow = nrow(.newdata))
@@ -122,16 +122,19 @@ predictLearner.classif.xgboost = function(.learner, .model, .newdata, ...) {
       p = factor(p, levels = colnames(y))
       return(p)
     }
-  } else {
-    p = matrix(p,num_class,length(p)/num_class)
-    p = t(p)
-    colnames(p) = class_lvls
-    if (.learner$predict.type == "prob") {
-      return(p)
-    } else {
-      ind = max.col(p)
-      cns = colnames(p)
-      return(factor(cns[ind], levels = cns))
+  } else { #multiclass
+    if (.learner$par.vals$objective  == "multi:softmax") {
+      return(factor(p, levels = class_lvls))
+      } else {
+        p = matrix(p, nrow = length(p) / num_class, ncol = num_class, byrow = TRUE)
+        colnames(p) = class_lvls
+        if (.learner$predict.type == "prob") {
+          return(p)
+        } else {
+          ind = max.col(p)
+          cns = colnames(p)
+          return(factor(cns[ind], levels = cns))
+      } 
     }
   }
 }
